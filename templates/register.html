@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register — DisasterAid</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="auth-page">
+  <div class="auth-card" style="max-width:480px;">
+    <div class="auth-logo">
+      <div class="logo-icon">🆘</div>
+      <h2>Create an account</h2>
+      <p>Join the relief coordination network</p>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ 'error' if category == 'error' else 'success' }}">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('auth.register') }}">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Full name <span class="required">*</span></label>
+          <input type="text" name="name" class="form-control" placeholder="Your name" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Role <span class="required">*</span></label>
+          <select name="role" id="role-select" class="form-control" required onchange="toggleSkills()">
+            <option value="">Select role</option>
+            <option value="volunteer">Volunteer</option>
+            <option value="ngo">NGO</option>
+            <option value="authority">Authority</option>
+            <option value="affected">Affected Person</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email address <span class="required">*</span></label>
+        <input type="email" name="email" class="form-control" placeholder="you@example.com" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password <span class="required">*</span></label>
+        <input type="password" name="password" class="form-control" placeholder="Min. 6 characters" required>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Phone</label>
+          <input type="text" name="phone" class="form-control" placeholder="10-digit number">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Location</label>
+          <input type="text" name="location" class="form-control" placeholder="City / Area">
+        </div>
+      </div>
+      <div class="form-group" id="skills-group" style="display:none;">
+        <label class="form-label">Skills (for volunteers)</label>
+        <input type="text" name="skills" class="form-control" placeholder="e.g. First Aid, Boat Operation, Search & Rescue">
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; padding:11px;">
+        Create account
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      Already registered? <a href="{{ url_for('auth.login') }}">Sign in</a>
+    </div>
+  </div>
+</div>
+<script>
+function toggleSkills() {
+  const role = document.getElementById('role-select').value;
+  document.getElementById('skills-group').style.display = role === 'volunteer' ? 'block' : 'none';
+}
+</script>
+</body>
+</html>

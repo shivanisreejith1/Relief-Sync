@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block topbar_meta %}Welcome back, {{ session.user_name }}{% endblock %}
+
+{% block content %}
+{% if critical > 0 %}
+<div class="critical-bar" style="margin: -28px -32px 24px;">
+  🚨 <strong>{{ critical }} critical aid request{{ 's' if critical > 1 else '' }}</strong> awaiting response.
+  <a href="{{ url_for('main.aid_requests') }}">Review now →</a>
+</div>
+{% endif %}
+
+<!-- Stats -->
+<div class="stats-grid">
+  <div class="stat-card success">
+    <div class="stat-label">Available Resources</div>
+    <div class="stat-value">{{ stats.total_resources }}</div>
+    <div class="stat-sub">Registered & ready</div>
+  </div>
+  <div class="stat-card danger">
+    <div class="stat-label">Pending Requests</div>
+    <div class="stat-value">{{ stats.pending_requests }}</div>
+    <div class="stat-sub">Awaiting response</div>
+  </div>
+  <div class="stat-card info">
+    <div class="stat-label">Open Shelters</div>
+    <div class="stat-value">{{ stats.open_shelters }}</div>
+    <div class="stat-sub">Accepting people</div>
+  </div>
+  <div class="stat-card warning">
+    <div class="stat-label">Active Volunteers</div>
+    <div class="stat-value">{{ stats.total_volunteers }}</div>
+    <div class="stat-sub">Available to deploy</div>
+  </div>
+</div>
+
+<!-- Quick Actions -->
+<div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px;">
+  <div class="card">
+    <div class="card-header">
+      <h3>Quick Actions</h3>
+    </div>
+    <div class="card-body" style="display:flex; flex-direction:column; gap:10px;">
+      {% if session.user_role != 'affected' %}
+      <a href="{{ url_for('main.add_resource') }}" class="btn btn-success">📦 Register a Resource</a>
+      {% endif %}
+      <a href="{{ url_for('main.new_request') }}" class="btn btn-primary">🙏 Submit Aid Request</a>
+      <a href="{{ url_for('main.shelters') }}" class="btn btn-secondary">🏠 Find a Shelter</a>
+      {% if session.user_role in ['authority','ngo'] %}
+      <a href="{{ url_for('main.volunteers') }}" class="btn btn-secondary">👥 Manage Volunteers</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h3>Disaster Preparedness</h3>
+    </div>
+    <div class="card-body">
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <div style="display:flex; align-items:center; gap:12px; padding:10px; background:var(--red-lt); border-radius:8px;">
+          <span style="font-size:24px;">🌊</span>
+          <div><div style="font-weight:600; font-size:13px; color:var(--red);">Flood Protocol</div>
+          <div style="font-size:12px; color:var(--gray-400);">Boats, life jackets, clean water</div></div>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px; padding:10px; background:var(--orange-lt); border-radius:8px;">
+          <span style="font-size:24px;">⛰️</span>
+          <div><div style="font-weight:600; font-size:13px; color:var(--orange);">Landslide Protocol</div>
+          <div style="font-size:12px; color:var(--gray-400);">Rescue equipment, medical aid</div></div>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px; padding:10px; background:var(--blue-lt); border-radius:8px;">
+          <span style="font-size:24px;">🌀</span>
+          <div><div style="font-weight:600; font-size:13px; color:var(--blue);">Cyclone Protocol</div>
+          <div style="font-size:12px; color:var(--gray-400);">Shelters, emergency food</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Requests -->
+<div class="card">
+  <div class="card-header">
+    <h3>Recent Aid Requests</h3>
+    <a href="{{ url_for('main.aid_requests') }}" class="btn btn-secondary btn-sm">View all</a>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Requester</th>
+          <th>Type</th>
+          <th>Qty</th>
+          <th>Urgency</th>
+          <th>Location</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in recent_requests %}
+        <tr>
+          <td style="color:var(--gray-400); font-size:12px;">{{ r.id }}</td>
+          <td style="font-weight:500;">{{ r.requester_name }}</td>
+          <td>{{ r.resource_type }}</td>
+          <td>{{ r.quantity_needed }}</td>
+          <td>
+            {% if r.urgency == 'critical' %}<span class="badge badge-danger">🔴 Critical</span>
+            {% elif r.urgency == 'high' %}<span class="badge badge-warning">🟠 High</span>
+            {% elif r.urgency == 'medium' %}<span class="badge badge-info">🔵 Medium</span>
+            {% else %}<span class="badge badge-gray">🟢 Low</span>{% endif %}
+          </td>
+          <td style="font-size:13px; color:var(--gray-400);">{{ r.location }}</td>
+          <td>
+            {% if r.status == 'pending' %}<span class="badge badge-warning">Pending</span>
+            {% elif r.status == 'approved' %}<span class="badge badge-info">Approved</span>
+            {% elif r.status == 'fulfilled' %}<span class="badge badge-success">Fulfilled</span>
+            {% else %}<span class="badge badge-danger">Rejected</span>{% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" style="text-align:center; color:var(--gray-400); padding:24px;">No requests yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}Add Shelter{% endblock %}
+{% block page_title %}Add Shelter{% endblock %}
+
+{% block content %}
+<div style="max-width:580px;">
+  <div class="page-header">
+    <div>
+      <h2>Register a Shelter</h2>
+      <p>Add a new relief shelter to the network</p>
+    </div>
+    <a href="{{ url_for('main.shelters') }}" class="btn btn-secondary">← Back</a>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <form method="POST" action="{{ url_for('main.add_shelter') }}">
+        <div class="form-group">
+          <label class="form-label">Shelter name <span class="required">*</span></label>
+          <input type="text" name="name" class="form-control" placeholder="e.g. Government School Relief Camp" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Location <span class="required">*</span></label>
+            <input type="text" name="location" class="form-control" placeholder="Area / Landmark" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Total capacity <span class="required">*</span></label>
+            <input type="number" name="capacity" class="form-control" placeholder="Max people" min="1" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Contact person</label>
+            <input type="text" name="contact_name" class="form-control" placeholder="In-charge name">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Contact phone</label>
+            <input type="text" name="contact_phone" class="form-control" placeholder="10-digit number">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Available facilities</label>
+          <input type="text" name="facilities" class="form-control" placeholder="e.g. Food, Water, Medical, Sanitation">
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Add Shelter</button>
+          <a href="{{ url_for('main.shelters') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

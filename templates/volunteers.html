@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}Volunteers{% endblock %}
+{% block page_title %}Volunteer Management{% endblock %}
+{% block topbar_meta %}Assign and track field volunteers{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Volunteers</h2>
+    <p>Registered volunteers and their assignments</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Contact</th>
+          <th>Location</th>
+          <th>Skills</th>
+          <th>Availability</th>
+          <th>Assigned Area</th>
+          <th>Current Task</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for v in volunteers %}
+        <tr>
+          <td style="font-weight:500;">{{ v.name }}</td>
+          <td style="font-size:13px;">
+            {{ v.email }}<br>
+            <span style="color:var(--gray-400);">{{ v.phone or '' }}</span>
+          </td>
+          <td style="font-size:13px; color:var(--gray-400);">{{ v.location }}</td>
+          <td style="font-size:12px; max-width:160px; color:var(--gray-700);">{{ v.skills or '—' }}</td>
+          <td>
+            {% if v.availability == 'available' %}<span class="badge badge-success">Available</span>
+            {% elif v.availability == 'assigned' %}<span class="badge badge-warning">Assigned</span>
+            {% else %}<span class="badge badge-gray">Unavailable</span>{% endif %}
+          </td>
+          <td style="font-size:13px;">{{ v.assigned_area or '—' }}</td>
+          <td style="font-size:13px; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ v.assigned_task or '—' }}</td>
+          <td>
+            <button class="btn btn-secondary btn-sm" onclick="toggleAssignForm({{ v.id }})">Assign</button>
+            <div id="assign-{{ v.id }}" style="display:none; margin-top:8px;">
+              <form method="POST" action="{{ url_for('main.assign_volunteer', vid=v.id) }}">
+                <input type="text" name="area" class="form-control" placeholder="Area" style="margin-bottom:6px; font-size:13px;" value="{{ v.assigned_area or '' }}">
+                <input type="text" name="task" class="form-control" placeholder="Task" style="margin-bottom:6px; font-size:13px;" value="{{ v.assigned_task or '' }}">
+                <button type="submit" class="btn btn-success btn-sm">Save</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" style="text-align:center; color:var(--gray-400); padding:32px;">No volunteers registered yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+function toggleAssignForm(id) {
+  const el = document.getElementById('assign-' + id);
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+</script>
+{% endblock %}

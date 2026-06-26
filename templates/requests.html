@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block title %}Aid Requests{% endblock %}
+{% block page_title %}Aid Requests{% endblock %}
+{% block topbar_meta %}Request queue by urgency{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Aid Requests</h2>
+    <p>{% if session.user_role == 'affected' %}Your submitted requests{% else %}All incoming requests, sorted by urgency{% endif %}</p>
+  </div>
+  <a href="{{ url_for('main.new_request') }}" class="btn btn-primary">+ New Request</a>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          {% if session.user_role != 'affected' %}<th>Requester</th>{% endif %}
+          <th>Resource needed</th>
+          <th>Qty</th>
+          <th>Urgency</th>
+          <th>Location</th>
+          <th>Description</th>
+          <th>Status</th>
+          {% if session.user_role in ['authority','ngo'] %}<th>Action</th>{% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in requests %}
+        <tr>
+          <td style="color:var(--gray-400); font-size:12px;">{{ r.id }}</td>
+          {% if session.user_role != 'affected' %}
+          <td style="font-weight:500;">{{ r.requester_name }}</td>
+          {% endif %}
+          <td style="text-transform:capitalize;">{{ r.resource_type }}</td>
+          <td>{{ r.quantity_needed }}</td>
+          <td>
+            {% if r.urgency == 'critical' %}<span class="badge badge-danger">🔴 Critical</span>
+            {% elif r.urgency == 'high' %}<span class="badge badge-warning">🟠 High</span>
+            {% elif r.urgency == 'medium' %}<span class="badge badge-info">🔵 Medium</span>
+            {% else %}<span class="badge badge-gray">🟢 Low</span>{% endif %}
+          </td>
+          <td style="font-size:13px; color:var(--gray-400);">{{ r.location }}</td>
+          <td style="font-size:13px; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="{{ r.description }}">{{ r.description or '—' }}</td>
+          <td>
+            {% if r.status == 'pending' %}<span class="badge badge-warning">Pending</span>
+            {% elif r.status == 'approved' %}<span class="badge badge-info">Approved</span>
+            {% elif r.status == 'fulfilled' %}<span class="badge badge-success">Fulfilled</span>
+            {% else %}<span class="badge badge-danger">Rejected</span>{% endif %}
+          </td>
+          {% if session.user_role in ['authority','ngo'] and r.status == 'pending' %}
+          <td>
+            <form method="POST" action="{{ url_for('main.update_request', rid=r.id) }}" style="display:flex; gap:4px;">
+              <button name="status" value="approved" class="btn btn-success btn-sm">✓ Approve</button>
+              <button name="status" value="fulfilled" class="btn btn-secondary btn-sm">✓ Fulfil</button>
+              <button name="status" value="rejected" class="btn btn-secondary btn-sm" style="color:var(--red);">✗</button>
+            </form>
+          </td>
+          {% elif session.user_role in ['authority','ngo'] %}
+          <td><span style="font-size:12px; color:var(--gray-400);">{{ r.status|capitalize }}</span></td>
+          {% endif %}
+        </tr>
+        {% else %}
+        <tr><td colspan="9" style="text-align:center; color:var(--gray-400); padding:32px;">
+          No requests yet. <a href="{{ url_for('main.new_request') }}">Submit a request →</a>
+        </td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

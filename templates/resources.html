@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block title %}Resources{% endblock %}
+{% block page_title %}Resource Registry{% endblock %}
+{% block topbar_meta %}All available relief supplies{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Resources</h2>
+    <p>All registered relief materials and supplies</p>
+  </div>
+  {% if session.user_role != 'affected' %}
+  <a href="{{ url_for('main.add_resource') }}" class="btn btn-primary">+ Register Resource</a>
+  {% endif %}
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <form method="GET" class="filter-bar" style="flex:1; margin:0;">
+      <select name="type" class="form-control" style="width:auto;" onchange="this.form.submit()">
+        <option value="">All types</option>
+        <option value="food" {% if filter_type=='food' %}selected{% endif %}>Food</option>
+        <option value="water" {% if filter_type=='water' %}selected{% endif %}>Water</option>
+        <option value="medicine" {% if filter_type=='medicine' %}selected{% endif %}>Medicine</option>
+        <option value="clothing" {% if filter_type=='clothing' %}selected{% endif %}>Clothing</option>
+        <option value="equipment" {% if filter_type=='equipment' %}selected{% endif %}>Equipment</option>
+        <option value="other" {% if filter_type=='other' %}selected{% endif %}>Other</option>
+      </select>
+      <select name="status" class="form-control" style="width:auto;" onchange="this.form.submit()">
+        <option value="">All statuses</option>
+        <option value="available" {% if filter_status=='available' %}selected{% endif %}>Available</option>
+        <option value="allocated" {% if filter_status=='allocated' %}selected{% endif %}>Allocated</option>
+        <option value="depleted" {% if filter_status=='depleted' %}selected{% endif %}>Depleted</option>
+      </select>
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Resource</th>
+          <th>Type</th>
+          <th>Quantity</th>
+          <th>Location</th>
+          <th>Disaster</th>
+          <th>Registered By</th>
+          <th>Status</th>
+          {% if session.user_role in ['authority','ngo'] %}<th>Action</th>{% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in resources %}
+        <tr>
+          <td style="color:var(--gray-400); font-size:12px;">{{ r.id }}</td>
+          <td style="font-weight:500;">{{ r.name }}</td>
+          <td style="text-transform:capitalize;">{{ r.type }}</td>
+          <td>{{ r.quantity }} {{ r.unit }}</td>
+          <td style="font-size:13px; color:var(--gray-400);">{{ r.location }}</td>
+          <td>
+            {% if r.disaster_type == 'flood' %}🌊 Flood
+            {% elif r.disaster_type == 'landslide' %}⛰️ Landslide
+            {% elif r.disaster_type == 'cyclone' %}🌀 Cyclone
+            {% else %}General{% endif %}
+          </td>
+          <td style="font-size:13px;">{{ r.registered_by_name or '—' }}</td>
+          <td>
+            {% if r.status == 'available' %}<span class="badge badge-success">Available</span>
+            {% elif r.status == 'allocated' %}<span class="badge badge-warning">Allocated</span>
+            {% else %}<span class="badge badge-danger">Depleted</span>{% endif %}
+          </td>
+          {% if session.user_role in ['authority','ngo'] %}
+          <td>
+            {% if r.status == 'available' %}
+            <form method="POST" action="{{ url_for('main.allocate_resource', rid=r.id) }}" style="display:inline;">
+              <button type="submit" class="btn btn-warning btn-sm">Allocate</button>
+            </form>
+            {% endif %}
+          </td>
+          {% endif %}
+        </tr>
+        {% else %}
+        <tr><td colspan="9" style="text-align:center; color:var(--gray-400); padding:32px;">No resources found. <a href="{{ url_for('main.add_resource') }}">Register one →</a></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

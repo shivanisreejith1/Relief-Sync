@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Relief Platform{% endblock %} — DisasterAid</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">🆘</div>
+      <h1>DisasterAid</h1>
+      <p>Relief Coordination Platform</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section">Overview</div>
+      <a href="{{ url_for('main.dashboard') }}" class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}">
+        <span class="icon">📊</span> Dashboard
+      </a>
+
+      <div class="nav-section">Operations</div>
+      <a href="{{ url_for('main.resources') }}" class="nav-link {% if request.endpoint in ['main.resources','main.add_resource'] %}active{% endif %}">
+        <span class="icon">📦</span> Resources
+      </a>
+      <a href="{{ url_for('main.aid_requests') }}" class="nav-link {% if request.endpoint in ['main.aid_requests','main.new_request'] %}active{% endif %}">
+        <span class="icon">🙏</span> Aid Requests
+      </a>
+      <a href="{{ url_for('main.shelters') }}" class="nav-link {% if request.endpoint in ['main.shelters','main.add_shelter'] %}active{% endif %}">
+        <span class="icon">🏠</span> Shelters
+      </a>
+
+      {% if session.user_role in ['authority','ngo'] %}
+      <div class="nav-section">Management</div>
+      <a href="{{ url_for('main.volunteers') }}" class="nav-link {% if request.endpoint == 'main.volunteers' %}active{% endif %}">
+        <span class="icon">👥</span> Volunteers
+      </a>
+      {% endif %}
+    </nav>
+
+    <div class="sidebar-user">
+      <div class="user-avatar">{{ session.user_name[:2].upper() }}</div>
+      <div class="user-info">
+        <div class="name">{{ session.user_name }}</div>
+        <div class="role">{{ session.user_role }}</div>
+      </div>
+      <a href="{{ url_for('auth.logout') }}" class="logout-link" title="Sign out">↩</a>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <div class="main-content">
+    {% block topbar %}
+    <div class="topbar">
+      <div class="topbar-title">{% block page_title %}{% endblock %}</div>
+      <div class="topbar-meta">{% block topbar_meta %}{% endblock %}</div>
+    </div>
+    {% endblock %}
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        {% if category == 'error' %}
+          <div style="padding: 0 32px; margin-top: 12px;">
+            <div class="alert alert-error">⚠️ {{ message }}</div>
+          </div>
+        {% else %}
+          <div style="padding: 0 32px; margin-top: 12px;">
+            <div class="alert alert-success">✅ {{ message }}</div>
+          </div>
+        {% endif %}
+      {% endfor %}
+    {% endwith %}
+
+    <div class="page-body">
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+</div>
+</body>
+</html>

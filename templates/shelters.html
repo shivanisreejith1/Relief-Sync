@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block title %}Shelters{% endblock %}
+{% block page_title %}Shelter Locations{% endblock %}
+{% block topbar_meta %}Live capacity status{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Shelters</h2>
+    <p>Find an open shelter near you</p>
+  </div>
+  {% if session.user_role in ['authority','ngo'] %}
+  <a href="{{ url_for('main.add_shelter') }}" class="btn btn-primary">+ Add Shelter</a>
+  {% endif %}
+</div>
+
+<div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap:16px;">
+  {% for s in shelters %}
+  {% set pct = ((s.current_occupancy / s.capacity) * 100)|int %}
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h3>{{ s.name }}</h3>
+        <div style="font-size:12px; color:var(--gray-400); margin-top:2px;">📍 {{ s.location }}</div>
+      </div>
+      {% if s.status == 'open' %}<span class="badge badge-success">Open</span>
+      {% elif s.status == 'full' %}<span class="badge badge-danger">Full</span>
+      {% else %}<span class="badge badge-gray">Closed</span>{% endif %}
+    </div>
+    <div class="card-body">
+      <div style="margin-bottom:14px;">
+        <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px;">
+          <span style="color:var(--gray-400);">Capacity</span>
+          <span style="font-weight:600;">{{ s.current_occupancy }} / {{ s.capacity }}</span>
+        </div>
+        <div class="cap-bar" style="width:100%;">
+          <div class="cap-fill {% if pct < 60 %}low{% elif pct < 85 %}mid{% else %}high{% endif %}"
+               style="width:{{ pct }}%;"></div>
+        </div>
+        <div style="font-size:11px; color:var(--gray-400); margin-top:4px;">{{ pct }}% full</div>
+      </div>
+
+      {% if s.facilities %}
+      <div style="font-size:12px; color:var(--gray-400); margin-bottom:12px;">
+        🏥 {{ s.facilities }}
+      </div>
+      {% endif %}
+
+      <div style="font-size:13px; color:var(--gray-700);">
+        Contact: <strong>{{ s.contact_name }}</strong><br>
+        📞 {{ s.contact_phone or 'Not provided' }}
+      </div>
+
+      {% if session.user_role in ['authority','ngo'] %}
+      <form method="POST" action="{{ url_for('main.update_shelter', sid=s.id) }}"
+            style="display:flex; gap:8px; margin-top:14px; align-items:center;">
+        <input type="number" name="occupancy" class="form-control" value="{{ s.current_occupancy }}"
+               min="0" max="{{ s.capacity }}" style="width:90px; padding:6px 10px; font-size:13px;">
+        <button type="submit" class="btn btn-secondary btn-sm">Update</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+  {% else %}
+  <div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--gray-400);">
+    No shelters registered yet.
+    {% if session.user_role in ['authority','ngo'] %}
+    <a href="{{ url_for('main.add_shelter') }}">Add the first shelter →</a>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
